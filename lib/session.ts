@@ -15,13 +15,37 @@ export const authOptions: NextAuthOptions = {
         })
     ],
     jwt: {
-        // encode: () => { },
-        // decode: () => { }
+        encode: ({ secret, token }) => {
+            return jsonwebtoken.sign({
+                ...token,
+                iss: "grafbase",
+                exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24
+            }, secret)
+        }
+        ,
+        decode: ({ secret, token }) => {
+            return jsonwebtoken.verify(token!, secret) as JWT
+        }
     },
     callbacks: {
 
         async session({ session }) {
-            return session;
+            try {
+                const email = session?.user?.email as string;
+                const data = await getUser(email) as { user?: UserProfile };
+                const newSession = {
+                    ...session,
+                    user: {
+                        ...session.user,
+                        ...data.user
+                    }
+                }
+                return newSession
+            } catch (error) {
+                console.log(error)
+                return session
+            }
+
         },
         async signIn({ user }: { user: User | AdapterUser }) {
             try {
