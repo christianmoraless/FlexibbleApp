@@ -1,7 +1,7 @@
 import { AdapterUser } from "next-auth/adapters";
 import { JWT } from "next-auth/jwt";
 import GoogleProvider from "next-auth/providers/google";
-import NextAuth, { NextAuthOptions, User, getServerSession } from "next-auth";
+import { NextAuthOptions, User, getServerSession } from "next-auth";
 import jsonwebtoken from "jsonwebtoken";
 import { SessionInterface, UserProfile } from "@/common.types";
 import { createUser, getUser } from "./actions";
@@ -10,25 +10,29 @@ import { createUser, getUser } from "./actions";
 export const authOptions: NextAuthOptions = {
     providers: [
         GoogleProvider({
-            clientId: "",
-            clientSecret: ""
+            clientId: process.env.NEXT_AUTH_GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.NEXT_AUTH_GOOGLE_CLIENT_SECRET!
         })
     ],
     jwt: {
+        secret: process.env.NEXT_AUTH_SECRET!,
         encode: ({ secret, token }) => {
-            return jsonwebtoken.sign({
-                ...token,
-                iss: "grafbase",
-                exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24
-            }, secret)
-        }
-        ,
-        decode: ({ secret, token }) => {
-            return jsonwebtoken.verify(token!, secret) as JWT
-        }
+            const encodedToken = jsonwebtoken.sign(
+                {
+                    ...token,
+                    iss: "grafbase",
+                    exp: Math.floor(Date.now() / 1000) + 60 * 60,
+                },
+                secret
+            );
+            return encodedToken;
+        },
+        decode: async ({ secret, token }) => {
+            const decodedToken = jsonwebtoken.verify(token!, secret);
+            return decodedToken as JWT;
+        },
     },
     callbacks: {
-
         async session({ session }) {
             try {
                 const email = session?.user?.email as string;
@@ -50,6 +54,7 @@ export const authOptions: NextAuthOptions = {
         async signIn({ user }: { user: User | AdapterUser }) {
             try {
                 const userExists = await getUser(user?.email as string) as { user: UserProfile };
+                console.log("user exits" + userExists)
                 if (!userExists.user) {
                     await createUser(
                         user?.name as string,

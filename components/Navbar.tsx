@@ -8,6 +8,7 @@ import { getCurrentUser } from "@/lib/session";
 export const Navbar = async () => {
 
   const session = await getCurrentUser();
+  console.log("current user", session)
 
   return (
     <nav className="flexBetween navbar">
