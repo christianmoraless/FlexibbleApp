@@ -1,10 +1,12 @@
 "use client"
 import Image from "next/image";
-import { ChangeEvent } from "react";
+import { ChangeEvent, useState } from "react";
 import { SessionInterface } from "@/common.types";
 //components
 import { FormField } from "./FormField";
 import { categoryFilters } from "@/constants";
+import { CustomMenu } from "./CustomMenu";
+import { Button } from "./Button";
 
 type Props = {
     type: string;
@@ -12,25 +14,35 @@ type Props = {
 }
 export const ProjectForm = ({ type, session }: Props) => {
 
-    const handleFormSubmit = (e: React.FormEvent) => {
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [form, setForm] = useState({
+        title: "",
+        description: "",
+        image: "",
+        liveSiteUrl: "",
+        githubUrl: "",
+        category: "",
+    })
 
-    }
-
+    const handleFormSubmit = (e: React.FormEvent) => { }
     const handleChangeImage = (e: ChangeEvent<HTMLInputElement>) => {
-
+        e.preventDefault();
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!file.type.includes("image")) return alert("Please upload an image file");
+        const reader = new FileReader();
+        reader.readAsDataURL(file)
+        reader.onload = () => {
+            const result = reader.result as string;
+            handleStateChange("image", result);
+        }
     }
 
     const handleStateChange = (fieldName: string, value: string) => {
-
-    }
-
-    const form = {
-        image: "",
-        title: "",
-        liveSiteUrl: "",
-        description: "",
-        githubUrl: "",
-        category: "",
+        setForm((prevState) => ({
+            ...prevState,
+            [fieldName]: value
+        }))
     }
 
     return (
@@ -84,7 +96,7 @@ export const ProjectForm = ({ type, session }: Props) => {
             <FormField
                 type="url"
                 title="Github Url"
-                state={form.liveSiteUrl}
+                state={form.githubUrl}
                 placeholder="Url of your live project"
                 setState={(value) => handleStateChange("githubUrl", value)}
             />
@@ -97,7 +109,12 @@ export const ProjectForm = ({ type, session }: Props) => {
             />
 
             <div className="flexStart w-full">
-                <button>Create</button>
+                <Button
+                    title="Create"
+                    type="submit"
+                    leftIcon={isSubmitting ? "" : "/plus.svg"}
+                    isSubmitting={isSubmitting}
+                />
             </div>
         </form>
     )
