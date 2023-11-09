@@ -6,8 +6,8 @@ const secret = process.env.NEXT_AUTH_SECRET || "";
 
 export async function GET(req: NextRequest) {
     const token = await getToken({ req, secret, raw: true });
-    // if (!token) {
-    //     return NextResponse.json({ message: "No Token Founded" }, { status: 400 });
-    // }
+    if (!token) {
+        return NextResponse.json({ message: "No Token Founded" }, { status: 400 });
+    }
     return NextResponse.json({ token }, { status: 200 });
 }

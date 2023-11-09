@@ -6,7 +6,7 @@ export const createProjectMutation = `
 				title
 				description
 				createdBy {
-					email
+	        email
 					name
 				}
 			}
