@@ -14,7 +14,6 @@ type ProjectsSearch = {
   }
 }
 
-
 const Home = async () => {
   const data = await fetchAllProjects() as ProjectsSearch;
 
