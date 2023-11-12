@@ -72,6 +72,7 @@ export const authOptions: NextAuthOptions = {
         colorScheme: "light",
         logo: "/logo.png",
     },
+    secret: process.env.NEXT_AUTH_SECRET || ""
 }
 
 

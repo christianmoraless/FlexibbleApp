@@ -1,28 +1,42 @@
-import { ProjectInterface } from "@/common.types"
-import { ProjectCard } from "@/components";
 import { fetchAllProjects } from "@/lib"
+import { ProjectInterface } from "@/common.types"
+import { Categories, LoadMore, ProjectCard } from "@/components";
 
-type ProjectsSearch = {
+type SearchParams = {
+  category?: string | null;
+  endcursor?: string | null;
+}
+
+type Props = {
+  searchParams: SearchParams
+}
+
+type ProjectSearch = {
   projectSearch: {
     edges: { node: ProjectInterface }[];
     pageInfo: {
-      start: string;
-      endCursor: string;
-      hasNextPage: boolean;
       hasPreviousPage: boolean;
-    }
-  }
+      hasNextPage: boolean;
+      startCursor: string;
+      endCursor: string;
+    };
+  },
 }
 
-const Home = async () => {
-  const data = await fetchAllProjects() as ProjectsSearch;
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+export const revalidate = 0;
+
+
+const Home = async ({ searchParams: { category, endcursor } }: Props) => {
+  const data = await fetchAllProjects(category || "", endcursor) as ProjectSearch
 
   const projectsToRender = data?.projectSearch?.edges || [];
 
   if (projectsToRender.length === 0) {
     return (
       <section className="flexStart flex-col paddings">
-        Categories
+        <Categories />
         <p className="no-result-text text-center">
           No Projects found, go create some first.nm
         </p>
@@ -32,10 +46,11 @@ const Home = async () => {
 
   return (
     <section className='flex-start flex-col paddings mb-16'>
-      <h1>Categories</h1>
+      <Categories />
       <section className="projects-grid">
-        {projectsToRender.map(({ node }: { node: ProjectInterface }) => (
+        {projectsToRender.map(({ node }: { node: ProjectInterface }, key) => (
           <ProjectCard
+            key={key}
             id={node?.id}
             image={node?.image}
             title={node?.title}
@@ -45,8 +60,12 @@ const Home = async () => {
           />
         ))}
       </section>
-      {/* <h1>Posts</h1>
-      <h1>Load More</h1> */}
+      <LoadMore
+        startCursor={data?.projectSearch?.pageInfo?.startCursor}
+        endCursor={data?.projectSearch?.pageInfo?.endCursor}
+        hasPreviousPage={data?.projectSearch?.pageInfo?.hasPreviousPage}
+        hasNextPage={data?.projectSearch?.pageInfo.hasNextPage}
+      />
     </section>
   )
 }

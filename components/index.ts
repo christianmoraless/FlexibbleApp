@@ -8,3 +8,5 @@ export * from "./FormField"
 export * from "./Button"
 export * from "./ProjectCard"
 export * from "./RelatedProjects"
+export * from "./LoadMore";
+export * from "./Categories"
